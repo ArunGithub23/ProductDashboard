@@ -3,11 +3,18 @@ const client=require('./db/dbcon')
 const multer=require('multer')
 const { catrouter } = require('./routes/categoryroute')
 const { productrouter } = require('./routes/productRoute')
+const dotenv=require('dotenv')
+const cors=require('cors')
 require('./db/Entity')
+dotenv.config()
+
+
+const port=process.env.port
 
 const app=express()
 const upload=multer()
 
+app.use(cors({allowedHeaders:'*'}))
 
 
 
@@ -26,14 +33,14 @@ app.get('/',(req,res)=>{
 })
 
 
-app.listen('4000',function(err){
+app.listen(port,function(err){
 
     if(err){
-        console.log("got an error while listening at 4000");
+        console.log("got an error while listening at ",port);
         
     }
     else{
-        console.log("server is listening at port 4000");
+        console.log("server is listening at port",port);
         
     }
 })

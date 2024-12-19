@@ -1,14 +1,14 @@
 const express=require('express')
-const { creatProduct } = require('../controller/prodController')
+const { creatProduct, readProduct, deleteProduct, updateProduct } = require('../controller/prodController')
 
 
 
 const productrouter=express.Router()
 
 
-productrouter.post('/creatProduct',creatProduct)
-// productrouter.post('/updatecategory',updatecategory)
-// productrouter.post('/deletecategory',deletecategory)
-// productrouters.post('/readcategory',readcategory)
+productrouter.post('/createproduct',creatProduct)
+productrouter.post('/updateproduct',updateProduct)
+productrouter.post('/deleteproduct',deleteProduct)
+productrouter.get(`/readproduct/:page/:limit`,readProduct)
 
 module.exports={productrouter}

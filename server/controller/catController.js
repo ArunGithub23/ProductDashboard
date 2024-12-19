@@ -3,68 +3,37 @@ const { client } = require("../db/dbcon")
 const CustomError = require("../Exceptions/customerror")
 
 
-const createcategory=(req,res)=>{
+const createcategory = async (req, res) => {
+    const { categoryName } = req.body;
+    console.log("Category Name:", categoryName);
 
-    const {categoryName}=req.body
-    console.log("req is",categoryName)   
-
-    if(!categoryName || categoryName== ''|| categoryName==null){
-        res.send({msg:'Bad Request', statuscode:400})
-
-
+    // Validate request
+    if (!categoryName || categoryName.trim() === "") {
+        return res.status(400).send({ msg: "Bad Request", statuscode: 400 });
     }
-     
-   
 
-    
-    
-    else{
-    
-       
     try {
-        let categoryexist=false;
-        const findcategory=`select * from category where category='${categoryName}';`
-        client.query(findcategory)
-        .then((result)=>{
-            if(result.rows[0]!=null){
-                categoryexist=true;
-                console.log('res is',result)
-                res.send({msg:'category already exists', statuscode:409})
-                throw new CustomError('error1',409)
+        // Check if the category already exists
+        const findCategoryQuery = `SELECT * FROM category WHERE category = $1`;
+        const findResult = await client.query(findCategoryQuery, [categoryName]);
 
-            }
-        }).catch((err)=>{
+        if (findResult.rows.length > 0) {
+            // Category already exists
+            return res.status(409).send({ msg: "Category already exists", statuscode: 409 });
+        }
 
-            res.send({msg:'erro in findcategory block', statuscode:500,err})
-        })
+        // Insert new category if it doesn't exist
+        const insertQuery = `INSERT INTO category (category) VALUES ($1) RETURNING *`;
+        const insertResult = await client.query(insertQuery, [categoryName]);
 
+        const newCategory = insertResult.rows[0];
+        res.status(200).send({ newCategory, statuscode: 200 });
 
-        if(!categoryexist){
-        const insertquery=`insert into category (category) values('${categoryName}') returning *`;
-        
-        client.query(insertquery).then((result) => {
-            console.log("okk1");
-            
-            const res1=result.rows[0]
-            res.send({res1,statuscode:200})
-        }).catch((err) => {
-            console.log("okk2");
-
-            res.send({msg:'erro in insert', statuscode:500,err})
-        });
-    }
     } catch (err) {
-        console.log("okk3");
-
-        // res.send({msg:'erro in insert',statuscode:500})
-
+        console.error("Error during category creation:", err);
+        res.status(500).send({ msg: "Internal Server Error", statuscode: 500, error: err });
     }
-
-}
-
-}
-
-
+};
 
 const updatecategory=(req,res)=>{
 
@@ -146,8 +115,8 @@ const readcategory=(req,res)=>{
     
     try {
        
-        const updatequery=`select * from category`
-        client.query(updatequery).then((result) => {
+        const readquery=`select * from category order by id`
+        client.query(readquery).then((result) => {
             // console.log('res is ',result)
             const res1=result.rows
             res.send({res1,statuscode:200})
